@@ -1,2 +1,3 @@
 *swp
 spec/config/database.yml
+pkg/*

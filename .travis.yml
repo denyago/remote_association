@@ -1,0 +1,15 @@
+language: ruby
+
+rvm:
+  - 1.9.3
+  - 1.8.7
+
+before_script:
+  - "cp spec/config/database.example.yml spec/config/database.yml"
+  - "bundle exec rake spec:db:setup"
+
+script: bundle exec rake spec
+
+branches:
+  only:
+    - master

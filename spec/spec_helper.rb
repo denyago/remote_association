@@ -1,14 +1,18 @@
 require 'rspec'
 require "database_cleaner"
+require 'fake_web'
+
 require 'remote_association'
+
 require 'yaml'
 require 'active_resource'
 
 RSpec.configure do |config|
   config.color_enabled = true
 
-    config.before(:suite) do
+  config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
+    FakeWeb.allow_net_connect = false
   end
 
   config.after(:suite) do

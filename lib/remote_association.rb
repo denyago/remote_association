@@ -5,6 +5,7 @@ require "remote_association/version"
 require "remote_association/active_record/relation"
 
 module RemoteAssociation
+
   # Include this class to hav associations to ActiveResource models
   #
   # It will add methods to your class:

@@ -1,3 +1,6 @@
+[![Build Status](https://secure.travis-ci.org/denyago/remote_association.png?branch=master)](http://travis-ci.org/denyago/remote_association)
+[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/denyago/remote_association)
+
 # Remote Association
 
   Add ```has_``` and ```belongs_``` associations to models inherited from ActiveResource::Base

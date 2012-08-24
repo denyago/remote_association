@@ -1,42 +1,43 @@
 module RemoteAssociation
   module BelongsToRemote
       # Specifies a one-to-one association with another class. This method should only be used
-      # if this class is a kind of ActiveResource::Base and service for this resource can
-      # return some kind of foreign key.
+      # if this class contains the foreign key. If the other class contains the foreign key,
+      # then you should use +has_one_remote+ instead.
       #
       # Methods will be added for retrieval and query for a single associated object, for which
       # this object holds an id:
       #
-      # [association()]
+      # [association]
       #   Returns the associated object. +nil+ is returned if none is found.
       # [association=(associate)]
       #   Just setter, no saves.
       #
       # (+association+ is replaced with the symbol passed as the first argument, so
-      # <tt>has_one_remote :author</tt> would add among others <tt>author.nil?</tt>.)
+      # <tt>belongs_to_remote :author</tt> would add among others <tt>author.nil?</tt>.)
       #
       # === Example
       #
-      # A Author class declares <tt>has_one_remote :profile</tt>, which will add:
-      # * <tt>Authort#profile</tt> (similar to <tt>Profile.find(:first, params: { author_id: [author.id]})</tt>)
-      # * <tt>Author#profile=(profile)</tt> (will set @profile instance variable of Author# to profile value)
+      # A Post class declares <tt>belongs_to_remote :author</tt>, which will add:
+      # * <tt>Post#author</tt> (similar to <tt>Author.find(:first, params: { id: [post.author_id]})</tt>)
+      # * <tt>Post#author=(author)</tt> (will set @author instance variable of Post# to author value)
       # The declaration can also include an options hash to specialize the behavior of the association.
       #
       # === Options
       #
       # [:class_name]
-      #   Specify the class name of the association. Use it only if that name can't be inferred
-      #   from the association name. So <tt>has_one_remote :profile</tt> will by default be linked to the Profile class, but
-      #   if the real class name is SocialProfile, you'll have to specify it with this option.
+      # Specify the class name of the association. Use it only if that name can't be inferred
+      # from the association name. So <tt>belongs_to_remote :author</tt> will by default be linked to the Author class, but
+      # if the real class name is Person, you'll have to specify it with this option.
       # [:foreign_key]
-      #   Specify the foreign key used for searching association on remote service. By default this is guessed to be the name
-      #   of the current class with an "_id" suffix. So a class Author that defines a <tt>has_one_remote :profile</tt>
-      #   association will use "author_id" as the default <tt>:foreign_key</tt>.
-      #   This key will be used in :get request. Example: <tt>GET http://example.com/profiles?author_id[]=1</tt>
+      # Specify the foreign key used for the association. By default this is guessed to be the name
+      # of the association with an "_id" suffix. So a class that defines a <tt>belongs_to_remote :person</tt>
+      # association will use "person_id" as the default <tt>:foreign_key</tt>. Similarly,
+      # <tt>belongs_to_remote :favorite_person, :class_name => "Person"</tt> will use a foreign key
+      # of "favorite_person_id".
       #
       # Option examples:
-      #   has_one_remote :firm, :foreign_key => "client_of"
-      #   has_one_remote :author, :class_name => "Person", :foreign_key => "author_id"
+      # belongs_to :firm, :foreign_key => "client_of"
+      # belongs_to :author, :class_name => "Person", :foreign_key => "author_id"
       def belongs_to_remote(remote_rel, options ={})
         rel_options = {
                        class_name:  remote_rel.to_s.classify,

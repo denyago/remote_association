@@ -37,8 +37,14 @@ def add_user(id, name)
   ActiveRecord::Base.connection.execute("insert into \"public\".\"users\" (\"id\", \"name\") values ( #{id}, '#{name}');")
 end
 
+def add_profile(id, user_id, like)
+  ActiveRecord::Base.connection.execute("insert into \"public\".\"profiles\" (\"id\", \"user_id\", \"like\") values ( #{id}, #{user_id}, '#{like}');")
+end
+
 REMOTE_HOST = "http://127.0.0.1:3000"
-PROFILES_JSON = [
-  {profile: {id: 1, user_id: 1, like: "letter A"}},
-  {profile: {id: 2, user_id: 2, like: "letter B"}}
-]
+
+def unset_const(const_name)
+  const_name = const_name.to_sym
+  const_owner = Module.constants.select { |c| c.to_s.constantize.constants(false).include?(const_name) rescue false }.first.to_s.constantize
+  !const_owner.send(:remove_const, const_name) rescue true
+end

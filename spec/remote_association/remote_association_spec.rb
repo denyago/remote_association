@@ -22,14 +22,6 @@ describe RemoteAssociation do
     add_user(2,"User B")
   end
 
-  it 'should prefetch remote associations of models with defaults (single request)' do
-    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @profiles_json.to_json)
-
-    users = User.scoped.includes_remote(:profile)
-    users.first.profile.like.should eq('letter A')
-    users.last.profile.like.should eq('letter B')
-  end
-
   it 'should raise error if can\'t find settings for included remote' do
     lambda{ User.scoped.includes_remote(:whatever) }.should raise_error(RemoteAssociation::SettingsNotFoundError, "Can't find settings for whatever association")
   end
@@ -55,15 +47,6 @@ describe RemoteAssociation do
     users.last.profile.like.should eq('letter B')
     users.first.other_profile.like.should eq('letter A')
     users.last.other_profile.like.should eq('letter B')
-  end
-
-  it 'should autoload remote associations of each models without prefetching (1+N requiests)' do
-    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1", body: [@profiles_json.first].to_json)
-    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=2", body: [@profiles_json.last].to_json)
-
-    users = User.scoped
-    users.first.profile.like.should eq('letter A')
-    users.last.profile.like.should eq('letter B')
   end
 
 end

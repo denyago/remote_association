@@ -37,6 +37,10 @@ def add_user(id, name)
   ActiveRecord::Base.connection.execute("insert into \"public\".\"users\" (\"id\", \"name\") values ( #{id}, '#{name}');")
 end
 
+def add_profile(id, user_id, like)
+  ActiveRecord::Base.connection.execute("insert into \"public\".\"profiles\" (\"id\", \"user_id\", \"like\") values ( #{id}, #{user_id}, '#{like}');")
+end
+
 REMOTE_HOST = "http://127.0.0.1:3000"
 
 def unset_const(const_name)

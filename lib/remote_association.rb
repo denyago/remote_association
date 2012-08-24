@@ -3,6 +3,7 @@ require "active_support"
 
 require "remote_association/version"
 require "remote_association/has_one_remote"
+require "remote_association/belongs_to_remote"
 require "remote_association/active_record/relation"
 
 module RemoteAssociation
@@ -23,6 +24,7 @@ module RemoteAssociation
 
     module ClassMethods
       include RemoteAssociation::HasOneRemote
+      include RemoteAssociation::BelongsToRemote
 
       # Adds settings of relation to ActiveResource model.
       #

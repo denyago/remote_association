@@ -24,6 +24,18 @@ CREATE TABLE "public"."users" (
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."users" OWNER TO "rails";
+
+DROP TABLE IF EXISTS "public"."profiles";
+
+CREATE TABLE "public"."profiles" (
+	"id" int4 NOT NULL,
+	"user_id" int4 NOT NULL,
+	"like" varchar(255) NOT NULL,
+	CONSTRAINT "profiles_pkey" PRIMARY KEY ("id") NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."profiles" OWNER TO "rails";
+
 SQL
                                      )
     end

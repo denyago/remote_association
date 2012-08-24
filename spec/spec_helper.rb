@@ -36,3 +36,9 @@ ActiveRecord::Base.establish_connection(db_config)
 def add_user(id, name)
   ActiveRecord::Base.connection.execute("insert into \"public\".\"users\" (\"id\", \"name\") values ( #{id}, '#{name}');")
 end
+
+REMOTE_HOST = "http://127.0.0.1:3000"
+PROFILES_JSON = [
+  {profile: {id: 1, user_id: 1, like: "letter A"}},
+  {profile: {id: 2, user_id: 2, like: "letter B"}}
+]

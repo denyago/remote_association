@@ -40,12 +40,14 @@ Add this line to your application's Gemfile:
 
 ## TODO
 
-Implement 'has_many_remote' analogie of 'AR.has_many'
+Implement 'has_many_remote' analogue of 'AR.has_many'
 
 ## Contributing
 
 1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+2. Set up testing database via `rake spec:db:setup`
+3. Create your feature branch (`git checkout -b my-new-feature`)
+4. Add tests and run via `rspec`
+5. Commit your changes (`git commit -am 'Added some feature'`)
+6. Push to the branch (`git push origin my-new-feature`)
+7. Create new Pull Request

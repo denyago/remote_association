@@ -11,7 +11,7 @@ module RemoteAssociation
   # Include this class to hav associations to ActiveResource models
   #
   # It will add methods to your class:
-  # * <tt>has_one_remote(name, *oprions)</tt>
+  # * <tt>has_one_remote(name, *options)</tt>
   # * <tt>activeresource_relations</tt>
   # * <tt>add_activeresource_relation(name, options)</tt>
   module Base

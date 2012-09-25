@@ -18,7 +18,7 @@ module RemoteAssociation
       # === Example
       #
       # A Author class declares <tt>has_one_remote :profile</tt>, which will add:
-      # * <tt>Authort#profile</tt> (similar to <tt>Profile.find(:first, params: { author_id: [author.id]})</tt>)
+      # * <tt>Author#profile</tt> (similar to <tt>Profile.find(:first, params: { author_id: [author.id]})</tt>)
       # * <tt>Author#profile=(profile)</tt> (will set @profile instance variable of Author# to profile value)
       # The declaration can also include an options hash to specialize the behavior of the association.
       #

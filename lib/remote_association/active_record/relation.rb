@@ -17,11 +17,11 @@ module ActiveRecord
         raise RemoteAssociation::SettingsNotFoundError, "Can't find settings for #{r} association" if settings.blank?
 
         ar_accessor = r.to_sym
-        foregin_key = settings[:foreign_key]
+        foreign_key = settings[:foreign_key]
         ar_class    = settings[:class_name ].constantize
 
-        fetch_and_join_for_has_one_remote(ar_accessor, foregin_key, ar_class) if settings[:association_type] == :has_one_remote
-        fetch_and_join_for_belongs_to_remote(ar_accessor, foregin_key, ar_class) if settings[:association_type] == :belongs_to_remote
+        fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_one_remote
+        fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :belongs_to_remote
       end
 
       set_remote_resources_prefetched
@@ -31,23 +31,23 @@ module ActiveRecord
 
     private
 
-      def fetch_and_join_for_has_one_remote(ar_accessor, foregin_key, ar_class)
+      def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
         keys = self.uniq.pluck(:id)
 
-        remote_objects = ar_class.find(:all, :params => { foregin_key => keys })
+        remote_objects = ar_class.find(:all, :params => { foreign_key => keys })
 
         self.each do |u|
-          u.send("#{ar_accessor}=", remote_objects.select {|s| s.send(foregin_key) == u.id })
+          u.send("#{ar_accessor}=", remote_objects.select {|s| s.send(foreign_key) == u.id })
         end
       end
 
-      def fetch_and_join_for_belongs_to_remote(ar_accessor, foregin_key, ar_class)
-        keys = self.uniq.pluck(foregin_key.to_sym)
+      def fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class)
+        keys = self.uniq.pluck(foreign_key.to_sym)
 
         remote_objects = ar_class.find(:all, :params => { :id => keys })
 
         self.each do |u|
-          u.send("#{ar_accessor}=", remote_objects.select {|s| u.send(foregin_key) == s.id })
+          u.send("#{ar_accessor}=", remote_objects.select {|s| u.send(foreign_key) == s.id })
         end
       end
 

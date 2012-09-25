@@ -60,7 +60,7 @@ SQL
     end
 
     def db_present?
-      ActiveRecord::Base.connection.execute("SELECT count(*) FROM pg_database where dataname = '#{db_config['database']}'").values.flatten.first.to_i == 1
+      ActiveRecord::Base.connection.execute("SELECT count(*) FROM pg_database where datname = '#{db_config['database']}'").values.flatten.first.to_i == 1
     end
   end
 end

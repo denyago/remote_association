@@ -9,6 +9,7 @@ module RemoteAssociation
       #
       # [association]
       #   Returns the associated object. +nil+ is returned if none is found.
+      #   When foreign_key value is nil, remote request would not be executed.
       # [association=(associate)]
       #   Just setter, no saves.
       #
@@ -60,7 +61,7 @@ module RemoteAssociation
             if remote_resources_prefetched?
               @#{remote_rel} ? @#{remote_rel}.first : nil
             else
-              @#{remote_rel} ||= #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash(self.#{rel_options[:foreign_key]}))
+              @#{remote_rel} ||= self.#{rel_options[:foreign_key]}.present? ? #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash(self.#{rel_options[:foreign_key]})) : nil
             end
           end
 
@@ -74,6 +75,5 @@ module RemoteAssociation
         RUBY
 
       end
-
   end
 end

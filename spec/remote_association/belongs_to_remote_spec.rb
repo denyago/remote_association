@@ -24,7 +24,7 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       include RemoteAssociation::Base
       belongs_to_remote :user
     end
-    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body )
+    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
 
     Profile.first.user.name.should eq('User A')
   end
@@ -36,6 +36,19 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     profiles = Profile.scoped.includes_remote(:user)
     profiles.first.user.name.should eq('User A')
     profiles.last.user.name.should eq('User B')
+  end
+
+  it "should not request remote collection in single request when all foreign_keys are nil" do
+    Profile.delete_all
+    add_profile(1, 'NULL', "A")
+    add_profile(2, 'NULL', "A")
+    profiles = Profile.scoped.includes_remote(:user)
+    profiles.map(&:user).should eq [nil, nil]
+  end
+
+  it "should not request remote data when foreign_key value is nil" do
+    profile = Profile.new(user_id: nil)
+    profile.user.should be_nil
   end
 
   describe "#build_params_hash" do
@@ -63,8 +76,9 @@ describe RemoteAssociation, "method :belongs_to_remote" do
         include RemoteAssociation::Base
         belongs_to_remote :user, class_name: "CustomUser"
       end
-      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body )
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
     end
+
     it ":foreign_key - can set key to extract from it's model" do
       unset_const(:Profile)
       class Profile < ActiveRecord::Base
@@ -74,6 +88,7 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       end
       FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
     end
+
     it ":primary_key - can set key to query from remote API" do
       unset_const(:Profile)
       class Profile < ActiveRecord::Base
@@ -82,10 +97,9 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       end
       FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?search%5Bid_in%5D%5B%5D=1", body: @body)
     end
+
     after(:each) do
       Profile.first.user.name.should eq('User A')
     end
   end
-
-
 end

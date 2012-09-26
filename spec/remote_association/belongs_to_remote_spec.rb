@@ -61,6 +61,14 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       end
       FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
     end
+    it ":primary_key - can set key to query from remote API" do
+      unset_const(:Profile)
+      class Profile < ActiveRecord::Base
+        include RemoteAssociation::Base
+        belongs_to_remote :user, primary_key: 'search[id_in]'
+      end
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?search%5Bid_in%5D%5B%5D=1", body: @body)
+    end
     after(:each) do
       Profile.first.user.name.should eq('User A')
     end

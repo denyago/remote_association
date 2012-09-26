@@ -24,7 +24,7 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       include RemoteAssociation::Base
       belongs_to_remote :user
     end
-    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body )
+    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
 
     Profile.first.user.name.should eq('User A')
   end
@@ -36,6 +36,12 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     profiles = Profile.scoped.includes_remote(:user)
     profiles.first.user.name.should eq('User A')
     profiles.last.user.name.should eq('User B')
+  end
+
+  it "should not request remote data when foreign_key value is nil" do
+    profile = Profile.new(user_id: nil)
+    profile.user.should_not raise_error FakeWeb::NetConnectNotAllowedError
+    profile.user.should be_nil
   end
 
   describe "has options:"  do
@@ -50,8 +56,9 @@ describe RemoteAssociation, "method :belongs_to_remote" do
         include RemoteAssociation::Base
         belongs_to_remote :user, class_name: "CustomUser"
       end
-      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body )
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
     end
+
     it ":foreign_key - can set key to extract from it's model" do
       unset_const(:Profile)
       class Profile < ActiveRecord::Base
@@ -61,10 +68,9 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       end
       FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
     end
+
     after(:each) do
       Profile.first.user.name.should eq('User A')
     end
   end
-
-
 end

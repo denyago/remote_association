@@ -56,9 +56,9 @@ describe RemoteAssociation, "method :has_one_remote" do
       unset_const(:User)
       class User < ActiveRecord::Base
         include RemoteAssociation::Base
-        has_one_remote :profile, foreign_key: :login_id
+        has_one_remote :profile, foreign_key: 'search[login_id_in]'
       end
-      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?login_id%5B%5D=1", body: @body)
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?search%5Blogin_id_in%5D%5B%5D=1", body: @body)
     end
     after(:each) do
       User.first.profile.like.should eq('letter A')

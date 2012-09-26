@@ -38,6 +38,14 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     profiles.last.user.name.should eq('User B')
   end
 
+  it "should not request remote collection in single request when all foreign_keys are nil" do
+    Profile.delete_all
+    add_profile(1, 'NULL', "A")
+    add_profile(2, 'NULL', "A")
+    profiles = Profile.scoped.includes_remote(:user)
+    profiles.map(&:user).should eq [nil, nil]
+  end
+
   it "should not request remote data when foreign_key value is nil" do
     profile = Profile.new(user_id: nil)
     profile.user.should_not raise_error FakeWeb::NetConnectNotAllowedError

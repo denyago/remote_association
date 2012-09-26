@@ -6,6 +6,8 @@ module ActiveRecord
     # May raise <tt>RemoteAssociation::SettingsNotFoundError</tt> if one of args can't be found among
     # Class.activeresource_relations settings
     #
+    # Would not perform remote request if all associated foreign_keys of belongs_to_remote association are nil
+    #
     # Returns all the records matched by the options of the relation, same as <tt>all(*args)</tt>
     #
     # === Examples
@@ -42,7 +44,9 @@ module ActiveRecord
       end
 
       def fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class)
-        keys = self.uniq.pluck(foreign_key.to_sym)
+        keys = self.uniq.pluck(foreign_key.to_sym).compact
+
+        return if keys.empty?
 
         remote_objects = ar_class.find(:all, :params => { :id => keys })
 

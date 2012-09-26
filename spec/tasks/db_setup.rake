@@ -29,7 +29,7 @@ DROP TABLE IF EXISTS "public"."profiles";
 
 CREATE TABLE "public"."profiles" (
 	"id" int4 NOT NULL,
-	"user_id" int4 NOT NULL,
+	"user_id" int4,
 	"like" varchar(255) NOT NULL,
 	CONSTRAINT "profiles_pkey" PRIMARY KEY ("id") NOT DEFERRABLE INITIALLY IMMEDIATE
 )

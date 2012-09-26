@@ -7,6 +7,7 @@ describe RemoteAssociation do
       {profile: {id: 2, user_id: 2, like: "letter B"}}
     ]
   end
+
   before(:each) do
     unset_const(:Profile)
     unset_const(:User)
@@ -20,6 +21,10 @@ describe RemoteAssociation do
 
     add_user(1,"User A")
     add_user(2,"User B")
+  end
+
+  it "should preserve the relation" do
+    User.scoped.includes_remote(:profile).is_a?(ActiveRecord::Relation).should be_true
   end
 
   it 'should raise error if can\'t find settings for included remote' do
@@ -48,5 +53,4 @@ describe RemoteAssociation do
     users.first.other_profile.like.should eq('letter A')
     users.last.other_profile.like.should eq('letter B')
   end
-
 end

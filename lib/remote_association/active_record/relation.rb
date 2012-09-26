@@ -28,7 +28,7 @@ module ActiveRecord
 
       set_remote_resources_prefetched
 
-      self.all
+      self
     end
 
     private

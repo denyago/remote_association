@@ -9,7 +9,7 @@ module RemoteAssociation
       #
       # [association]
       #   Returns the associated object. +nil+ is returned if none is found.
-      #   When foreign_key value is not set, remote request would not be executed.
+      #   When foreign_key value is nil, remote request would not be executed.
       # [association=(associate)]
       #   Just setter, no saves.
       #

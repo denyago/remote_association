@@ -38,6 +38,13 @@ describe RemoteAssociation, "method :has_one_remote" do
     users.last.profile.like.should eq('letter B')
   end
 
+  describe "#build_params_hash" do
+    it "returns valid Hash of HTTP query string parameters" do
+      User.build_params_hash(10).should eq({'user_id' => [10]})
+      User.build_params_hash([10, 13, 15]).should eq({'user_id' => [10, 13, 15]})
+    end
+  end
+
   describe "has options:"  do
     it ":class_name - able to choose custom class of association" do
       unset_const(:User)

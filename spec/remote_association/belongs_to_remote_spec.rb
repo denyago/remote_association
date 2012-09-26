@@ -38,6 +38,19 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     profiles.last.user.name.should eq('User B')
   end
 
+  describe "#build_params_hash" do
+    it "returns valid Hash of HTTP query string parameters" do
+      unset_const(:Profile)
+      class Profile < ActiveRecord::Base
+        include RemoteAssociation::Base
+        belongs_to_remote :user
+      end
+
+      Profile.build_params_hash(10).should eq({'id' => [10]})
+      Profile.build_params_hash([10, 13, 15]).should eq({'id' => [10, 13, 15]})
+    end
+  end
+
   describe "has options:"  do
     it ":class_name - able to choose custom class of association" do
       unset_const(:Profile)

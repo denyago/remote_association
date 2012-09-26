@@ -35,15 +35,20 @@ module RemoteAssociation
       # association will use "person_id" as the default <tt>:foreign_key</tt>. Similarly,
       # <tt>belongs_to_remote :favorite_person, :class_name => "Person"</tt> will use a foreign key
       # of "favorite_person_id".
+      # [:primary_key]
+      # Specify the http query parameter to find associated object used for the association. By default this is <tt>id</tt>.
+      # Example:
+      #  belongs_to_remote :firm, :primary_key => 'search[id_in]' #=> ...?firms.json?search%5Bid_in%5D%5B%5D=1
       #
       # Option examples:
-      # belongs_to :firm, :foreign_key => "client_of"
-      # belongs_to :author, :class_name => "Person", :foreign_key => "author_id"
+      #   belongs_to_remote :firm, :foreign_key => "client_of"
+      #   belongs_to_remote :author, :class_name => "Person", :foreign_key => "author_id"
       def belongs_to_remote(remote_rel, options ={})
         rel_options = {
                        class_name:  remote_rel.to_s.classify,
                        foreign_key: remote_rel.to_s.foreign_key,
-                       association_type: :belongs_to_remote
+                       association_type: :belongs_to_remote,
+                       primary_key: 'id'
                       }.merge(options.symbolize_keys)
 
         add_activeresource_relation(remote_rel.to_sym, rel_options)
@@ -55,11 +60,16 @@ module RemoteAssociation
           def #{remote_rel}
             if remote_resources_prefetched?
               @#{remote_rel} ? @#{remote_rel}.first : nil
-            elsif self.#{rel_options[:foreign_key]}.present?
-              @#{remote_rel} ||= #{rel_options[:class_name]}.find(:first, params: { id: [self.#{rel_options[:foreign_key]}]})
             else
-              nil
+              @#{remote_rel} ||= self.#{rel_options[:foreign_key]}.present? ? #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash(self.#{rel_options[:foreign_key]})) : nil
             end
+          end
+
+          ##
+          # Returns Hash with HTTP parameters to query remote API
+          def self.build_params_hash(keys)
+            keys = [keys] unless keys.kind_of?(Array)
+            {"#{rel_options[:primary_key]}" => keys}
           end
 
         RUBY

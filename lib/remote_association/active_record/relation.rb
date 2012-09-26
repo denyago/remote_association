@@ -36,7 +36,7 @@ module ActiveRecord
       def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
         keys = self.uniq.pluck(:id)
 
-        remote_objects = ar_class.find(:all, :params => { foreign_key => keys })
+        remote_objects = fetch_remote_objects(ar_class, keys)
 
         self.each do |u|
           u.send("#{ar_accessor}=", remote_objects.select {|s| s.send(foreign_key) == u.id })
@@ -48,7 +48,7 @@ module ActiveRecord
 
         return if keys.empty?
 
-        remote_objects = ar_class.find(:all, :params => { :id => keys })
+        remote_objects = fetch_remote_objects(ar_class, keys)
 
         self.each do |u|
           u.send("#{ar_accessor}=", remote_objects.select {|s| u.send(foreign_key) == s.id })
@@ -59,6 +59,10 @@ module ActiveRecord
         self.each do |u|
           u.instance_variable_set(:@remote_resources_prefetched, true)
         end
+      end
+
+      def fetch_remote_objects(ar_class, keys)
+        ar_class.find(:all, :params => klass.build_params_hash(keys))
       end
 
   end

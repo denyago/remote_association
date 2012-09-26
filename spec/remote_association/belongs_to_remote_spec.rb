@@ -48,8 +48,20 @@ describe RemoteAssociation, "method :belongs_to_remote" do
 
   it "should not request remote data when foreign_key value is nil" do
     profile = Profile.new(user_id: nil)
-    profile.user.should_not raise_error FakeWeb::NetConnectNotAllowedError
     profile.user.should be_nil
+  end
+
+  describe "#build_params_hash" do
+    it "returns valid Hash of HTTP query string parameters" do
+      unset_const(:Profile)
+      class Profile < ActiveRecord::Base
+        include RemoteAssociation::Base
+        belongs_to_remote :user
+      end
+
+      Profile.build_params_hash(10).should eq({'id' => [10]})
+      Profile.build_params_hash([10, 13, 15]).should eq({'id' => [10, 13, 15]})
+    end
   end
 
   describe "has options:"  do
@@ -75,6 +87,15 @@ describe RemoteAssociation, "method :belongs_to_remote" do
         def login_id; user_id; end
       end
       FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: @body)
+    end
+
+    it ":primary_key - can set key to query from remote API" do
+      unset_const(:Profile)
+      class Profile < ActiveRecord::Base
+        include RemoteAssociation::Base
+        belongs_to_remote :user, primary_key: 'search[id_in]'
+      end
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?search%5Bid_in%5D%5B%5D=1", body: @body)
     end
 
     after(:each) do

@@ -47,7 +47,7 @@ Implement 'has_many_remote' analogue of 'AR.has_many'
 1. Fork it
 2. Set up testing database via `rake spec:db:setup`
 3. Create your feature branch (`git checkout -b my-new-feature`)
-4. Add tests and run via `rspec`, you can use `rspec -d` if you need debugger
+4. Add tests and run via `rspec`
 5. Commit your changes (`git commit -am 'Added some feature'`)
 6. Push to the branch (`git push origin my-new-feature`)
 7. Create new Pull Request

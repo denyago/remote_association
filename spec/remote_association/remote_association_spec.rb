@@ -23,12 +23,6 @@ describe RemoteAssociation do
     add_user(2,"User B")
   end
 
-  it "should preserve the relation" do
-    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @profiles_json.to_json)
-
-    User.scoped.includes_remote(:profile).is_a?(ActiveRecord::Relation).should be_true
-  end
-
   it 'should raise error if can\'t find settings for included remote' do
     lambda{ User.scoped.includes_remote(:whatever) }.should raise_error(RemoteAssociation::SettingsNotFoundError, "Can't find settings for whatever association")
   end

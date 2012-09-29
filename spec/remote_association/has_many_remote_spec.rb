@@ -41,13 +41,39 @@ describe RemoteAssociation, 'method :has_many_remote' do
     users.last.profiles.map(&:like).should eq ["letter C"]
   end
 
+  describe '#build_params_hash' do
+    it 'returns valid Hash of HTTP query string parameters' do
+      User.build_params_hash(10).should eq({'user_id' => [10]})
+      User.build_params_hash([10, 13, 15]).should eq({'user_id' => [10, 13, 15]})
+    end
+  end
+
   describe 'options' do
-    it ':class_name' do
-      pending
+    it ":class_name" do
+      unset_const(:User)
+      unset_const(:CustomProfile)
+      class CustomProfile < ActiveResource::Base
+        self.site = REMOTE_HOST
+        self.element_name = "profile"
+      end
+      class User < ActiveRecord::Base
+        include RemoteAssociation::Base
+        has_many_remote :profiles, class_name: "CustomProfile"
+      end
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1", body: @body )
     end
 
-    it ':foreign_key' do
-      pending
+    it ":foreign_key" do
+      unset_const(:User)
+      class User < ActiveRecord::Base
+        include RemoteAssociation::Base
+        has_many_remote :profiles, foreign_key: 'search[login_id_in]'
+      end
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?search%5Blogin_id_in%5D%5B%5D=1", body: @body)
+    end
+
+    after(:each) do
+      User.first.profiles.map(&:like).should eq(['letter A', 'letter B'])
     end
   end
 end

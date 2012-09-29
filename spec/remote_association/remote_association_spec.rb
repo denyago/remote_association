@@ -24,6 +24,8 @@ describe RemoteAssociation do
   end
 
   it "should preserve the relation" do
+    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @profiles_json.to_json)
+
     User.scoped.includes_remote(:profile).is_a?(ActiveRecord::Relation).should be_true
   end
 

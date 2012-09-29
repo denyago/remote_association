@@ -39,9 +39,9 @@ module RemoteAssociation
     #   has_many_remote :badges, :class_name => "Label", :foreign_key => "author_id"
     def has_many_remote(remote_rel, options ={})
       rel_options = {
-          class_name: remote_rel.to_s.classify,
+          class_name: remote_rel.to_s.singularize.classify,
           foreign_key: self.model_name.to_s.foreign_key,
-          association_type: :has_one_remote
+          association_type: :has_many_remote
       }.merge(options.symbolize_keys)
 
       add_activeresource_relation(remote_rel.to_sym, rel_options)

@@ -3,7 +3,7 @@
 
 # Remote Association
 
-  Add ```has_``` and ```belongs_``` associations to models inherited from ActiveResource::Base
+  Add ```has_one_remote```, ```has_many_remote```, and ```belongs_to_remote``` associations to models inherited from ActiveResource::Base
 
   Say, you have Author and a service with Profiles. You can access profile of author as easy as `author.profile`.
 
@@ -17,19 +17,32 @@
 
   Notice, that for now, associations work in read-only mode.
 
-## Example
+## Full Example
 
 ```ruby
+  class Group < ActiveResource::Base
+    self.site = REMOTE_HOST
+  end
+
   class Profile < ActiveResource::Base
     self.site = REMOTE_HOST
   end
-  class User < ActiveRecord::Base
-    include RemoteAssociation::Base
-    has_one_remote :profile
+
+  class Badge < ActiveResource::Base
+    self.site = REMOTE_HOST
   end
 
-  User.first.profile
+  class User < ActiveRecord::Base
+    include RemoteAssociation::Base
 
+    has_one_remote :profile
+    has_many_remote :badges
+    belongs_to_remote :group, class_name: 'Group', foreign_key: :group_id, primary_key: 'custom_search[id_in]'
+  end
+
+  User.first.profile   # => <Profile>
+  User.first.group     # => <Group>
+  User.first.badges    # => [<Badge>, <Badge>]
 ```
 
 ## Installation
@@ -40,14 +53,24 @@ Add this line to your application's Gemfile:
 
 ## TODO
 
-Implement 'has_many_remote' analogue of 'AR.has_many'
-
 ## Contributing
 
 1. Fork it
-2. Set up testing database via `rake spec:db:setup`
-3. Create your feature branch (`git checkout -b my-new-feature`)
+2. Set up testing database via
+
+    rake spec:db:setup
+
+3. Create your feature branch
+
+    git checkout -b my-new-feature
+
 4. Add tests and run via `rspec`
-5. Commit your changes (`git commit -am 'Added some feature'`)
-6. Push to the branch (`git push origin my-new-feature`)
+5. Commit your changes
+
+    git commit -am 'Added some feature'
+
+6. Push to the branch
+
+    git push origin my-new-feature
+
 7. Create new Pull Request

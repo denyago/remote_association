@@ -7,6 +7,7 @@ describe RemoteAssociation do
       {profile: {id: 2, user_id: 2, like: "letter B"}}
     ]
   end
+
   before(:each) do
     unset_const(:Profile)
     unset_const(:User)
@@ -48,5 +49,4 @@ describe RemoteAssociation do
     users.first.other_profile.like.should eq('letter A')
     users.last.other_profile.like.should eq('letter B')
   end
-
 end

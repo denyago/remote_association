@@ -20,9 +20,10 @@ module ActiveRecord
 
         ar_accessor = r.to_sym
         foreign_key = settings[:foreign_key]
-        ar_class    = settings[:class_name ].constantize
+        ar_class = settings[:class_name].constantize
 
         fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_one_remote
+        fetch_and_join_for_has_many_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_many_remote
         fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :belongs_to_remote
       end
 
@@ -33,37 +34,47 @@ module ActiveRecord
 
     private
 
-      def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
-        keys = self.uniq.pluck(:id)
+    def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
+      keys = self.uniq.pluck(:id)
 
-        remote_objects = fetch_remote_objects(ar_class, keys)
+      remote_objects = fetch_remote_objects(ar_class, keys)
 
-        self.each do |u|
-          u.send("#{ar_accessor}=", remote_objects.select {|s| s.send(foreign_key) == u.id })
-        end
+      self.each do |u|
+        u.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == u.id })
       end
+    end
 
-      def fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class)
-        keys = self.uniq.pluck(foreign_key.to_sym).compact
+    def fetch_and_join_for_has_many_remote(ar_accessor, foreign_key, ar_class)
+      keys = self.uniq.pluck(:id)
 
-        return if keys.empty?
+      remote_objects = fetch_remote_objects(ar_class, keys)
 
-        remote_objects = fetch_remote_objects(ar_class, keys)
-
-        self.each do |u|
-          u.send("#{ar_accessor}=", remote_objects.select {|s| u.send(foreign_key) == s.id })
-        end
+      self.each do |r|
+        r.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == r.id })
       end
+    end
 
-      def set_remote_resources_prefetched
-        self.each do |u|
-          u.instance_variable_set(:@remote_resources_prefetched, true)
-        end
-      end
+    def fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class)
+      keys = self.uniq.pluck(foreign_key.to_sym).compact
 
-      def fetch_remote_objects(ar_class, keys)
-        ar_class.find(:all, :params => klass.build_params_hash(keys))
+      return if keys.empty?
+
+      remote_objects = fetch_remote_objects(ar_class, keys)
+
+      self.each do |u|
+        u.send("#{ar_accessor}=", remote_objects.select { |s| u.send(foreign_key) == s.id })
       end
+    end
+
+    def set_remote_resources_prefetched
+      self.each do |u|
+        u.instance_variable_set(:@remote_resources_prefetched, true)
+      end
+    end
+
+    def fetch_remote_objects(ar_class, keys)
+      ar_class.find(:all, :params => klass.build_params_hash(keys))
+    end
 
   end
 end

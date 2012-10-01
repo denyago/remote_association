@@ -21,53 +21,75 @@ module ActiveRecord
         ar_accessor = r.to_sym
         foreign_key = settings[:foreign_key]
         ar_class = settings[:class_name].constantize
+        association_type = settings[:association_type]
 
-        fetch_and_join_for_has_one_remote(   ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_one_remote
-        fetch_and_join_for_has_many_remote(  ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_many_remote
-        fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :belongs_to_remote
+        @remote_associations = (@remote_associations || [])
+        @remote_associations << {ar_accessor: ar_accessor, foreign_key: foreign_key,
+                                 ar_class: ar_class, association_type: association_type}
+
       end
 
-      set_remote_resources_prefetched
-
-      self.all
+      self
     end
 
   private
 
+    def exec_queries_with_remote_associations
+      exec_queries_without_remote_associations
+      preload_remote_associations
+      @records
+    end
+
+    alias_method :exec_queries_without_remote_associations, :exec_queries
+    alias_method :exec_queries, :exec_queries_with_remote_associations
+
+    def preload_remote_associations
+      return true if @remote_resources_loaded
+
+      (@remote_associations || []).each do |r|
+
+        fetch_and_join_for_has_one_remote(   r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :has_one_remote
+        fetch_and_join_for_has_many_remote(  r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :has_many_remote
+        fetch_and_join_for_belongs_to_remote(r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :belongs_to_remote
+      end
+      set_remote_resources_prefetched unless @remote_associations.blank?
+    end
+
     def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
-      keys = self.uniq.pluck(:id)
+      keys = @records.uniq.map(&:id)
 
       remote_objects = fetch_remote_objects(ar_class, keys)
 
-      self.each do |u|
+      @records.each do |u|
         u.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == u.id })
       end
     end
 
     def fetch_and_join_for_has_many_remote(ar_accessor, foreign_key, ar_class)
-      keys = self.uniq.pluck(:id)
+      keys = @records.uniq.map(&:id)
 
       remote_objects = fetch_remote_objects(ar_class, keys)
 
-      self.each do |r|
+      @records.each do |r|
         r.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == r.id })
       end
     end
 
     def fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class)
-      keys = self.uniq.pluck(foreign_key.to_sym).compact
+      keys = @records.uniq.map {|r| r.send foreign_key.to_sym }.compact
 
       return if keys.empty?
 
       remote_objects = fetch_remote_objects(ar_class, keys)
 
-      self.each do |u|
+      @records.each do |u|
         u.send("#{ar_accessor}=", remote_objects.select { |s| u.send(foreign_key) == s.id })
       end
     end
 
     def set_remote_resources_prefetched
-      self.each do |u|
+      @remote_resources_loaded = true
+      @records.each do |u|
         u.instance_variable_set(:@remote_resources_prefetched, true)
       end
     end

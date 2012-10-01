@@ -38,7 +38,7 @@ describe RemoteAssociation, "method :has_one_remote" do
   it 'should prefetch remote associations of models with defaults (single request)' do
     FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @full_body)
 
-    users = User.scoped.includes_remote(:profile)
+    users = User.scoped.includes_remote(:profile).all
     users.first.profile.like.should eq('letter A')
     users.last.profile.like.should eq('letter B')
   end

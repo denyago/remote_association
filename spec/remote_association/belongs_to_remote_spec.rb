@@ -44,7 +44,7 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     add_profile(2, 2, "letter B")
     FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1&id%5B%5D=2", body: @full_body)
 
-    profiles = Profile.scoped.includes_remote(:user)
+    profiles = Profile.scoped.includes_remote(:user).all
     profiles.first.user.name.should eq('User A')
     profiles.last.user.name.should eq('User B')
   end
@@ -53,7 +53,7 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     Profile.delete_all
     add_profile(1, 'NULL', "A")
     add_profile(2, 'NULL', "A")
-    profiles = Profile.scoped.includes_remote(:user)
+    profiles = Profile.scoped.includes_remote(:user).all
     profiles.map(&:user).should eq [nil, nil]
   end
 

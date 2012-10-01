@@ -43,10 +43,20 @@ describe RemoteAssociation do
     FakeWeb.register_uri(:get, "#{REMOTE_HOST}/other_profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @profiles_json.to_json)
     FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @profiles_json.to_json)
 
-    users = User.scoped.includes_remote(:profile, :other_profile)
+    users = User.scoped.includes_remote(:profile, :other_profile).all
     users.first.profile.like.should eq('letter A')
     users.last.profile.like.should eq('letter B')
     users.first.other_profile.like.should eq('letter A')
     users.last.other_profile.like.should eq('letter B')
+  end
+
+  it "should fetch remote objects right after ActiveRecord fetched array of data" do
+    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=2",
+       body: [{profile: {id: 2, user_id: 2, like: "letter B"}}].to_json)
+
+    t = User.arel_table
+    users = User.where(t[:name].matches('%User%')).includes_remote(:profile).
+                         where(t[:name].matches('%B%')).all
+    users.map(&:profile).flatten.map(&:like).should eq(['letter B'])
   end
 end

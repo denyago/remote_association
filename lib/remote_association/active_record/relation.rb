@@ -1,3 +1,5 @@
+require 'ostruct'
+
 module ActiveRecord
   class Relation
     # Loads relations to ActiveModel models of models, selected by current relation.
@@ -18,14 +20,14 @@ module ActiveRecord
         settings = klass.activeresource_relations[r.to_sym]
         raise RemoteAssociation::SettingsNotFoundError, "Can't find settings for #{r} association" if settings.blank?
 
-        ar_accessor = r.to_sym
-        foreign_key = settings[:foreign_key]
         ar_class = settings[:class_name].constantize
-        association_type = settings[:association_type]
 
-        remote_associations << {ar_accessor: ar_accessor, foreign_key: foreign_key,
-                                ar_class: ar_class, association_type: association_type}
-
+        remote_associations << OpenStruct.new(
+                                ar_accessor:      r.to_sym,
+                                foreign_key:      settings[:foreign_key],
+                                ar_class:         ar_class,
+                                association_type: settings[:association_type]
+                              )
       end
 
       self
@@ -58,43 +60,35 @@ module ActiveRecord
       return true if remote_resources_loaded?
 
       remote_associations.each do |r|
-
-        fetch_and_join_for_has_one_remote(   r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :has_one_remote
-        fetch_and_join_for_has_many_remote(  r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :has_many_remote
-        fetch_and_join_for_belongs_to_remote(r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :belongs_to_remote
+        case r.association_type
+          when :has_one_remote    then fetch_and_join_for_has_any_remote(r)
+          when :has_many_remote   then fetch_and_join_for_has_any_remote(r)
+          when :belongs_to_remote then fetch_and_join_for_belongs_to_remote(r)
+        end
       end
+
       set_remote_resources_prefetched unless remote_associations.empty?
     end
 
-    def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
+    def fetch_and_join_for_has_any_remote(settings)
       keys = @records.uniq.map(&:id)
 
-      remote_objects = fetch_remote_objects(ar_class, keys)
-
-      @records.each do |u|
-        u.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == u.id })
-      end
-    end
-
-    def fetch_and_join_for_has_many_remote(ar_accessor, foreign_key, ar_class)
-      keys = @records.uniq.map(&:id)
-
-      remote_objects = fetch_remote_objects(ar_class, keys)
+      remote_objects = fetch_remote_objects(settings.ar_class, keys)
 
       @records.each do |r|
-        r.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == r.id })
+        r.send("#{settings.ar_accessor}=", remote_objects.select { |s| s.send(settings.foreign_key) == r.id })
       end
     end
 
-    def fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class)
-      keys = @records.uniq.map {|r| r.send foreign_key.to_sym }.compact
+    def fetch_and_join_for_belongs_to_remote(settings)
+      keys = @records.uniq.map {|r| r.send settings.foreign_key.to_sym }.compact
 
       return if keys.empty?
 
-      remote_objects = fetch_remote_objects(ar_class, keys)
+      remote_objects = fetch_remote_objects(settings.ar_class, keys)
 
-      @records.each do |u|
-        u.send("#{ar_accessor}=", remote_objects.select { |s| u.send(foreign_key) == s.id })
+      @records.each do |r|
+        r.send("#{settings.ar_accessor}=", remote_objects.select { |s| r.send(settings.foreign_key) == s.id })
       end
     end
 

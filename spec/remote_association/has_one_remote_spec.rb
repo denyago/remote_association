@@ -30,6 +30,11 @@ describe RemoteAssociation, "method :has_one_remote" do
     User.first.profile.like.should eq('letter A')
   end
 
+  it 'returns nil if no object present' do
+    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1", body: [].to_json )
+    User.first.profile.should be_nil
+  end
+
   it 'should prefetch remote associations of models with defaults (single request)' do
     FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @full_body)
 

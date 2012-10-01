@@ -29,6 +29,17 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     Profile.first.user.name.should eq('User A')
   end
 
+  it 'returns nil if no object present' do
+    unset_const(:Profile)
+    class Profile < ActiveRecord::Base
+      include RemoteAssociation::Base
+      belongs_to_remote :user
+    end
+    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", body: [].to_json)
+
+    Profile.first.user.should be_nil
+  end
+
   it 'should prefetch remote associations of models with defaults (single request)' do
     add_profile(2, 2, "letter B")
     FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1&id%5B%5D=2", body: @full_body)

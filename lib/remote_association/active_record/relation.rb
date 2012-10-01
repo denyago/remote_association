@@ -2,19 +2,20 @@ require 'ostruct'
 
 module ActiveRecord
   class Relation
-    # Loads relations to ActiveModel models of models, selected by current relation.
-    # The analogy is <tt>includes(*args)</tt> of ActiveRecord.
+    # Queues loading of relations to ActiveModel models of models, selected by current relation.
+    # The full analogy is <tt>includes(*args)</tt> of ActiveRecord: all the realted objects will
+    # be loaded when one or all objects of relation are required.
     #
     # May raise <tt>RemoteAssociation::SettingsNotFoundError</tt> if one of args can't be found among
     # Class.activeresource_relations settings
     #
     # Would not perform remote request if all associated foreign_keys of belongs_to_remote association are nil
     #
-    # Returns all the records matched by the options of the relation, same as <tt>all(*args)</tt>
+    # Returns self - <tt>ActiveRecord::Relation</tt>
     #
     # === Examples
     #
-    # Author.scoped.includes_remote(:profile, :avatar)
+    # Author.scoped.includes_remote(:profile, :avatar).where(author_name: 'Tom').all
     def includes_remote(*args)
       args.each do |r|
         settings = klass.activeresource_relations[r.to_sym]
@@ -33,13 +34,41 @@ module ActiveRecord
       self
     end
 
+    # Adds conditions (i.e. http query string parameters) to request of each remote API. Those are parameters to query string.
+    #
+    # Returns self - <tt>ActiveRecord::Relation</tt>
+    #
+    # === Example
+    #
+    # Author.scoped.includes_remote(:profile, :avatar).where_remote(profile: {search: {public: true}}, avatar: { primary: true }).all
+    #
+    # #=> Will do requests to:
+    # #  * http://.../prefiles.json?author_id[]=1&author_id[]=N&search[public][]=true
+    # #  * http://.../avatars.json?author_id[]=1&author_id[]=N&primary=true
+    def where_remote(conditions = {})
+      conditions.each do |association, conditions|
+        remote_conditions[association.to_sym] = remote_conditions[association.to_sym].deep_merge(conditions)
+      end
+
+      self
+    end
+
+  private
+
+    # Array of remote associations to load.
+    # It contains Hashes with settings for loader.
     attr_accessor :remote_associations
 
     def remote_associations
       @remote_associations ||= []
     end
 
-  private
+    # Hash of parameters to merge into API requests.
+    attr_accessor :remote_conditions
+
+    def remote_conditions
+      @remote_conditions ||= Hash.new({})
+    end
 
     # A method proxy for exec_queries: it wraps around original one
     # and preloads remote associations. Returns {Array} of fetched
@@ -73,7 +102,7 @@ module ActiveRecord
     def fetch_and_join_for_has_any_remote(settings)
       keys = @records.uniq.map(&:id)
 
-      remote_objects = fetch_remote_objects(settings.ar_class, keys)
+      remote_objects = fetch_remote_objects(settings.ar_class, keys, settings.ar_accessor)
 
       @records.each do |record|
         record.send("#{settings.ar_accessor}=", remote_objects.select { |s| s.send(settings.foreign_key) == record.id })
@@ -85,7 +114,7 @@ module ActiveRecord
 
       return if keys.empty?
 
-      remote_objects = fetch_remote_objects(settings.ar_class, keys)
+      remote_objects = fetch_remote_objects(settings.ar_class, keys, settings.ar_accessor)
 
       @records.each do |record|
         record.send("#{settings.ar_accessor}=", remote_objects.select { |s| record.send(settings.foreign_key) == s.id })
@@ -99,8 +128,9 @@ module ActiveRecord
       end
     end
 
-    def fetch_remote_objects(ar_class, keys)
-      ar_class.find(:all, :params => klass.build_params_hash(keys))
+    def fetch_remote_objects(ar_class, keys, ar_accessor)
+      params = klass.build_params_hash(keys).deep_merge(remote_conditions[ar_accessor.to_sym])
+      ar_class.find(:all, :params => params )
     end
 
     def remote_resources_loaded?

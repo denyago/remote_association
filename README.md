@@ -45,6 +45,25 @@
   User.first.badges    # => [<Badge>, <Badge>]
 ```
 
+## Advanced  usage
+
+```ruby
+  # Will load associated objects, when we will need them
+  users = Users.scoped.includes_remote(:profile, :badges)
+
+  # just adding SQL condition to out users relation
+  users = users.where(active: true)
+
+  # add additional search condition for request to Profiles API
+  users = users.where_remote(profile: {search: {kind_in: ['Facebook', 'GitHub']}})
+
+  # time to do ordering and pagination...
+  users = users.offset.(100).limit(5).order('name ASC')
+
+  # Fetch 10 users from DB, fetch 10 Profiles and Avatars for those users
+  users = users.all
+```
+
 ## Installation
 
 Add this line to your application's Gemfile:

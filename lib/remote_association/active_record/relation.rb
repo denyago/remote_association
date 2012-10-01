@@ -23,17 +23,25 @@ module ActiveRecord
         ar_class = settings[:class_name].constantize
         association_type = settings[:association_type]
 
-        @remote_associations = (@remote_associations || [])
-        @remote_associations << {ar_accessor: ar_accessor, foreign_key: foreign_key,
-                                 ar_class: ar_class, association_type: association_type}
+        remote_associations << {ar_accessor: ar_accessor, foreign_key: foreign_key,
+                                ar_class: ar_class, association_type: association_type}
 
       end
 
       self
     end
 
+    attr_accessor :remote_associations
+
+    def remote_associations
+      @remote_associations ||= []
+    end
+
   private
 
+    # A method proxy for exec_queries: it wraps around original one
+    # and preloads remote associations. Returns {Array} of fetched
+    # records, like original exec_queries.
     def exec_queries_with_remote_associations
       exec_queries_without_remote_associations
       preload_remote_associations
@@ -43,16 +51,19 @@ module ActiveRecord
     alias_method :exec_queries_without_remote_associations, :exec_queries
     alias_method :exec_queries, :exec_queries_with_remote_associations
 
+    # Does heavy lifting on fetching remote associations from distant places:
+    #   - checks, if remote_resources_loaded? already
+    #   - iterates through remote_associations and loads objects for each one
     def preload_remote_associations
-      return true if @remote_resources_loaded
+      return true if remote_resources_loaded?
 
-      (@remote_associations || []).each do |r|
+      remote_associations.each do |r|
 
         fetch_and_join_for_has_one_remote(   r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :has_one_remote
         fetch_and_join_for_has_many_remote(  r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :has_many_remote
         fetch_and_join_for_belongs_to_remote(r[:ar_accessor], r[:foreign_key], r[:ar_class]) if r[:association_type] == :belongs_to_remote
       end
-      set_remote_resources_prefetched unless @remote_associations.blank?
+      set_remote_resources_prefetched unless remote_associations.empty?
     end
 
     def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
@@ -96,6 +107,10 @@ module ActiveRecord
 
     def fetch_remote_objects(ar_class, keys)
       ar_class.find(:all, :params => klass.build_params_hash(keys))
+    end
+
+    def remote_resources_loaded?
+      !!@remote_resources_loaded
     end
 
   end

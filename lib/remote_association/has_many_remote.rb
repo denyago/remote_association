@@ -51,7 +51,7 @@ module RemoteAssociation
         attr_accessor :#{remote_rel}
 
         def #{remote_rel}                                                 #  def customers
-          if remote_resources_prefetched?                                 #    if remote_resources_prefetched?
+          if remote_resources_loaded?                                     #    if remote_resources_loaded?
             @#{remote_rel} ? @#{remote_rel} : []                          #      @customers ? @customers : []
           else                                                            #    else
             @#{remote_rel} ||= #{rel_options[:class_name]}.               #      @customers ||= Person.

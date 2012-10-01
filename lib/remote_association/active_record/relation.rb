@@ -67,7 +67,7 @@ module ActiveRecord
         end
       end
 
-      set_remote_resources_prefetched unless remote_associations.empty?
+      set_remote_resources_loaded unless remote_associations.empty?
     end
 
     def fetch_and_join_for_has_any_remote(settings)
@@ -75,8 +75,8 @@ module ActiveRecord
 
       remote_objects = fetch_remote_objects(settings.ar_class, keys)
 
-      @records.each do |r|
-        r.send("#{settings.ar_accessor}=", remote_objects.select { |s| s.send(settings.foreign_key) == r.id })
+      @records.each do |record|
+        record.send("#{settings.ar_accessor}=", remote_objects.select { |s| s.send(settings.foreign_key) == record.id })
       end
     end
 
@@ -87,15 +87,15 @@ module ActiveRecord
 
       remote_objects = fetch_remote_objects(settings.ar_class, keys)
 
-      @records.each do |r|
-        r.send("#{settings.ar_accessor}=", remote_objects.select { |s| r.send(settings.foreign_key) == s.id })
+      @records.each do |record|
+        record.send("#{settings.ar_accessor}=", remote_objects.select { |s| record.send(settings.foreign_key) == s.id })
       end
     end
 
-    def set_remote_resources_prefetched
+    def set_remote_resources_loaded
       @remote_resources_loaded = true
-      @records.each do |u|
-        u.instance_variable_set(:@remote_resources_prefetched, true)
+      @records.each do |record|
+        record.instance_variable_set(:@remote_resources_loaded, true)
       end
     end
 

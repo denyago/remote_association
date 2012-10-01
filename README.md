@@ -17,27 +17,27 @@
 
   Notice, that for now, associations work in read-only mode.
 
-## Full Example
+## Example
 
 ```ruby
-  class Group < ActiveResource::Base
-    self.site = REMOTE_HOST
+  class UserGroup < ActiveResource::Base
+    self.site = 'http://example.com'
   end
 
   class Profile < ActiveResource::Base
-    self.site = REMOTE_HOST
+    self.site = 'http://example.com'
   end
 
   class Badge < ActiveResource::Base
-    self.site = REMOTE_HOST
+    self.site = 'http://example.com'
   end
 
   class User < ActiveRecord::Base
     include RemoteAssociation::Base
 
-    has_one_remote :profile
-    has_many_remote :badges
-    belongs_to_remote :group, class_name: 'Group', foreign_key: :group_id, primary_key: 'custom_search[id_in]'
+    has_one_remote      :profile
+    has_many_remote     :badges
+    belongs_to_remote   :group, class_name: 'UserGroup', foreign_key: :group_id, primary_key: 'search[id_in]'
   end
 
   User.first.profile   # => <Profile>
@@ -50,8 +50,6 @@
 Add this line to your application's Gemfile:
 
     gem 'remote_association'
-
-## TODO
 
 ## Contributing
 

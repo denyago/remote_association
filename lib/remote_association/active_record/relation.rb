@@ -22,8 +22,8 @@ module ActiveRecord
         foreign_key = settings[:foreign_key]
         ar_class = settings[:class_name].constantize
 
-        fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_one_remote
-        fetch_and_join_for_has_many_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_many_remote
+        fetch_and_join_for_has_one_remote(   ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_one_remote
+        fetch_and_join_for_has_many_remote(  ar_accessor, foreign_key, ar_class) if settings[:association_type] == :has_many_remote
         fetch_and_join_for_belongs_to_remote(ar_accessor, foreign_key, ar_class) if settings[:association_type] == :belongs_to_remote
       end
 
@@ -32,7 +32,7 @@ module ActiveRecord
       self.all
     end
 
-    private
+  private
 
     def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
       keys = self.uniq.pluck(:id)

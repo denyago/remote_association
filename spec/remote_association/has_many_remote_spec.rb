@@ -46,10 +46,10 @@ describe RemoteAssociation, 'method :has_many_remote' do
     users.last.profiles.map(&:like).should eq ["letter C"]
   end
 
-  describe '#build_params_hash' do
+  describe '#build_params_hash_for_relation' do
     it 'returns valid Hash of HTTP query string parameters' do
-      User.build_params_hash(10).should eq({'user_id' => [10]})
-      User.build_params_hash([10, 13, 15]).should eq({'user_id' => [10, 13, 15]})
+      User.build_params_hash_for_profiles(10).should eq({'user_id' => [10]})
+      User.build_params_hash_for_profiles([10, 13, 15]).should eq({'user_id' => [10, 13, 15]})
     end
   end
 
@@ -79,6 +79,46 @@ describe RemoteAssociation, 'method :has_many_remote' do
 
     after(:each) do
       User.first.profiles.map(&:like).should eq(['letter A', 'letter B'])
+    end
+  end
+
+  context "safe when using several remotes" do
+    before do
+      unset_const(:User)
+      class User < ActiveRecord::Base
+        include RemoteAssociation::Base
+        has_many_remote :foos, foreign_key: 'foo_id', class_name: "CustomFoo"
+        has_many_remote :bars, foreign_key: 'bar_id', class_name: "CustomBar"
+      end
+      class CustomFoo < ActiveResource::Base
+        self.site = REMOTE_HOST
+        self.element_name = "foo"
+      end
+      class CustomBar < ActiveResource::Base
+        self.site = REMOTE_HOST
+        self.element_name = "bar"
+      end
+
+      @foos_body = [
+          {foo: {id: 1, foo_id: 1, value: "F1"}},
+      ].to_json
+
+      @bars_body = [
+          {bar: {id: 1, bar_id: 1, value: "B1"}},
+          {bar: {id: 2, bar_id: 1, value: "B2"}},
+          {bar: {id: 3, bar_id: 1, value: "B3"}},
+      ].to_json
+
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/foos.json?foo_id%5B%5D=1", body: @foos_body)
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/bars.json?bar_id%5B%5D=1", body: @bars_body)
+    end
+
+    it "returns remotes respectively by foreign key and classname" do
+      User.delete_all
+      add_user(1, 'Tester')
+
+      User.first.foos.collect {|f| [f.id, f.value] }.should =~ [[1, 'F1']]
+      User.first.bars.collect {|b| [b.id, b.value] }.should =~ [[1, 'B1'], [2, 'B2'], [3, 'B3']]
     end
   end
 end

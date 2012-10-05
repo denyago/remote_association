@@ -50,18 +50,40 @@ module RemoteAssociation
 
         attr_accessor :#{remote_rel}
 
-        def #{remote_rel}                                                 #  def customers
-          if remote_resources_loaded?                                     #    if remote_resources_loaded?
-            @#{remote_rel} ? @#{remote_rel} : []                          #      @customers ? @customers : []
-          else                                                            #    else
-            @#{remote_rel} ||= #{rel_options[:class_name]}.               #      @customers ||= Person.
-              find(:all, params: self.class.build_params_hash(self.id))   #        find(:all, params: self.class.build_params_hash(self.id))
-          end                                                             #    end
-        end                                                               #  end
+        ##
+        # Adds a method to call remote relation
+        #
+        # === Example
+        #
+        #  def customers
+        #    if remote_resources_loaded?
+        #      @customers ? @customers : nil
+        #    else
+        #      @customers ||= Person.
+        #        find(:all, params: self.class.build_params_hash_for_customers(self.id))
+        #    end
+        #  end
+        #
+        def #{remote_rel}
+          if remote_resources_loaded?
+            @#{remote_rel} ? @#{remote_rel} : []
+          else
+            @#{remote_rel} ||= #{rel_options[:class_name]}.
+              find(:all, params: self.class.build_params_hash_for_#{remote_rel}(self.id))
+          end
+        end
 
         ##
         # Returns Hash with HTTP parameters to query remote API
-        def self.build_params_hash(keys)
+        #
+        # == Example
+        #
+        #  def self.build_params_hash_for_customer(keys)
+        #    keys = [keys] unless keys.kind_of?(Array)
+        #    {"user_id" => keys}
+        #  end
+        #
+        def self.build_params_hash_for_#{remote_rel}(keys)
           keys = [keys] unless keys.kind_of?(Array)
           {"#{rel_options[:foreign_key]}" => keys}
         end

@@ -137,11 +137,11 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       FakeWeb.register_uri(:get, "#{REMOTE_HOST}/bars.json?pie_id%5B%5D=1", body: @bars_body)
     end
 
-    it "returns remotes respectively by foreign key and classname" do
+    it "returns remotes respectively by primary and classname" do
       User.delete_all
       add_user(1, 'Tester')
       User.first.foos.collect {|f| [f.id, f.stuff] }.should =~ [[1, 'F1']]
-      User.first.bars.collect {|b| [b.id, b.oid] }.should =~ [[1, 'B1'], [3, 'B2'], [3, 'B3']]
+      User.first.bars.collect {|b| [b.id, b.oid] }.should =~ [[1, 'B1'], [2, 'B2'], [3, 'B3']]
     end
   end
 end

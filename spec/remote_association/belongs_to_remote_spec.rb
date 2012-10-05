@@ -108,11 +108,11 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       unset_const(:User)
       class User < ActiveRecord::Base
         include RemoteAssociation::Base
-        belongs_to_remote :foos, foreign_key: 'user_side_zoid_id', class_name: "CustomFoo", primary_key: 'zoid_id'
-        belongs_to_remote :bars, foreign_key: 'user_side_pie_id', class_name: "CustomBar", primary_key: 'pie_id'
+        belongs_to_remote :foos, foreign_key: 'user_side_foo_id', class_name: "CustomFoo", primary_key: 'foo_id'
+        belongs_to_remote :bars, foreign_key: 'user_side_bar_id', class_name: "CustomBar", primary_key: 'bar_id'
 
-        def user_side_zoid_id; self.id; end
-        def user_side_pie_id; self.id; end
+        def user_side_foo_id; self.id; end
+        def user_side_bar_id; self.id; end
       end
       class CustomFoo < ActiveResource::Base
         self.site = REMOTE_HOST
@@ -124,24 +124,24 @@ describe RemoteAssociation, "method :belongs_to_remote" do
       end
 
       @foos_body = [
-          {foo: {id: 1, zoid_id: 1, stuff: "F1"}},
+          {foo: {id: 1, foo_id: 1, value: "F1"}},
       ].to_json
 
       @bars_body = [
-          {bar: {id: 1, pie_id: 1, oid: "B1"}},
-          {bar: {id: 2, pie_id: 1, oid: "B2"}},
-          {bar: {id: 3, pie_id: 1, oid: "B3"}},
+          {bar: {id: 1, bar_id: 1, value: "B1"}},
+          {bar: {id: 2, bar_id: 1, value: "B2"}},
+          {bar: {id: 3, bar_id: 1, value: "B3"}},
       ].to_json
 
-      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/foos.json?zoid_id%5B%5D=1", body: @foos_body)
-      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/bars.json?pie_id%5B%5D=1", body: @bars_body)
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/foos.json?foo_id%5B%5D=1", body: @foos_body)
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/bars.json?bar_id%5B%5D=1", body: @bars_body)
     end
 
     it "returns remotes respectively by primary and classname" do
       User.delete_all
       add_user(1, 'Tester')
-      User.first.foos.collect {|f| [f.id, f.stuff] }.should =~ [[1, 'F1']]
-      User.first.bars.collect {|b| [b.id, b.oid] }.should =~ [[1, 'B1'], [2, 'B2'], [3, 'B3']]
+      User.first.foos.collect {|f| [f.id, f.value] }.should =~ [[1, 'F1']]
+      User.first.bars.collect {|b| [b.id, b.value] }.should =~ [[1, 'B1'], [2, 'B2'], [3, 'B3']]
     end
   end
 end

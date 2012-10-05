@@ -41,10 +41,10 @@ describe RemoteAssociation, 'method :has_many_remote' do
     users.last.profiles.map(&:like).should eq ["letter C"]
   end
 
-  describe '#build_params_hash' do
+  describe '#build_params_hash_for_relation' do
     it 'returns valid Hash of HTTP query string parameters' do
-      User.build_params_hash(10).should eq({'user_id' => [10]})
-      User.build_params_hash([10, 13, 15]).should eq({'user_id' => [10, 13, 15]})
+      User.build_params_hash_for_profiles(10).should eq({'user_id' => [10]})
+      User.build_params_hash_for_profiles([10, 13, 15]).should eq({'user_id' => [10, 13, 15]})
     end
   end
 
@@ -111,6 +111,7 @@ describe RemoteAssociation, 'method :has_many_remote' do
     it "returns remotes respectively by foreign key and classname" do
       User.delete_all
       add_user(1, 'Tester')
+
       User.first.foos.collect {|f| [f.id, f.value] }.should =~ [[1, 'F1']]
       User.first.bars.collect {|b| [b.id, b.value] }.should =~ [[1, 'B1'], [2, 'B2'], [3, 'B3']]
     end

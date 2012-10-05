@@ -61,19 +61,18 @@ module RemoteAssociation
             if remote_resources_prefetched?
               @#{remote_rel} ? @#{remote_rel}.first : nil
             else
-              @#{remote_rel} ||= self.#{rel_options[:foreign_key]}.present? ? #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash(self.#{rel_options[:foreign_key]})) : nil
+              @#{remote_rel} ||= self.#{rel_options[:foreign_key]}.present? ? #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]})) : nil
             end
           end
 
           ##
           # Returns Hash with HTTP parameters to query remote API
-          def self.build_params_hash(keys)
+          def self.build_params_hash_for_#{remote_rel}(keys)
             keys = [keys] unless keys.kind_of?(Array)
             {"#{rel_options[:primary_key]}" => keys}
           end
 
         RUBY
-
       end
   end
 end

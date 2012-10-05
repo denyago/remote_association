@@ -37,7 +37,7 @@ module ActiveRecord
     def fetch_and_join_for_has_one_remote(ar_accessor, foreign_key, ar_class)
       keys = self.uniq.pluck(:id)
 
-      remote_objects = fetch_remote_objects(ar_class, keys)
+      remote_objects = fetch_remote_objects(ar_class, ar_accessor, keys)
 
       self.each do |u|
         u.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == u.id })
@@ -47,7 +47,7 @@ module ActiveRecord
     def fetch_and_join_for_has_many_remote(ar_accessor, foreign_key, ar_class)
       keys = self.uniq.pluck(:id)
 
-      remote_objects = fetch_remote_objects(ar_class, keys)
+      remote_objects = fetch_remote_objects(ar_class, ar_accessor, keys)
 
       self.each do |r|
         r.send("#{ar_accessor}=", remote_objects.select { |s| s.send(foreign_key) == r.id })
@@ -59,7 +59,7 @@ module ActiveRecord
 
       return if keys.empty?
 
-      remote_objects = fetch_remote_objects(ar_class, keys)
+      remote_objects = fetch_remote_objects(ar_class, ar_accessor, keys)
 
       self.each do |u|
         u.send("#{ar_accessor}=", remote_objects.select { |s| u.send(foreign_key) == s.id })
@@ -72,9 +72,8 @@ module ActiveRecord
       end
     end
 
-    def fetch_remote_objects(ar_class, keys)
-      ar_class.find(:all, :params => klass.build_params_hash(keys))
+    def fetch_remote_objects(ar_class, ar_accessor, keys)
+      ar_class.find(:all, :params => klass.send(:"build_params_hash_for_#{ar_accessor}", keys))
     end
-
   end
 end

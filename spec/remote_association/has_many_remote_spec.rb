@@ -76,4 +76,43 @@ describe RemoteAssociation, 'method :has_many_remote' do
       User.first.profiles.map(&:like).should eq(['letter A', 'letter B'])
     end
   end
+
+  context "safe when using several remotes" do
+    before do
+      unset_const(:User)
+      class User < ActiveRecord::Base
+        include RemoteAssociation::Base
+        has_many_remote :foos, foreign_key: 'zoid_id', class_name: "CustomFoo"
+        has_many_remote :bars, foreign_key: 'pie_id', class_name: "CustomBar"
+      end
+      class CustomFoo < ActiveResource::Base
+        self.site = REMOTE_HOST
+        self.element_name = "foo"
+      end
+      class CustomBar < ActiveResource::Base
+        self.site = REMOTE_HOST
+        self.element_name = "bar"
+      end
+
+      @foos_body = [
+          {foo: {id: 1, zoid_id: 1, stuff: "F1"}},
+      ].to_json
+
+      @bars_body = [
+          {bar: {id: 1, pie_id: 1, oid: "B1"}},
+          {bar: {id: 2, pie_id: 1, oid: "B2"}},
+          {bar: {id: 3, pie_id: 1, oid: "B3"}},
+      ].to_json
+
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/foos.json?zoid_id%5B%5D=1", body: @foos_body)
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/bars.json?pie_id%5B%5D=1", body: @bars_body)
+    end
+
+    it "returns remotes respectively by foreign key and classname" do
+      User.delete_all
+      add_user(1, 'Tester')
+      User.first.foos.collect {|f| [f.id, f.stuff] }.should =~ [[1, 'F1']]
+      User.first.bars.collect {|b| [b.id, b.oid] }.should =~ [[1, 'B1'], [2, 'B2'], [3, 'B3']]
+    end
+  end
 end

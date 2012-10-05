@@ -138,6 +138,7 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     end
 
     it "returns remotes respectively by foreign key and classname" do
+      User.delete_all
       add_user(1, 'Tester')
       User.first.foos.collect {|f| [f.id, f.stuff] }.should =~ [[1, 'F1']]
       User.first.bars.collect {|b| [b.id, b.oid] }.should =~ [[1, 'B1'], [3, 'B2'], [3, 'B3']]

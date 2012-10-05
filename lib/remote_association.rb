@@ -60,8 +60,8 @@ module RemoteAssociation
     module InstanceMethods
 
       # Returns <tt>true</tt> if associations to remote relations already loaded and set
-      def remote_resources_prefetched?
-        @remote_resources_prefetched
+      def remote_resources_loaded?
+        @remote_resources_loaded
       end
     end
   end

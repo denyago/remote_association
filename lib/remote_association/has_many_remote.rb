@@ -8,7 +8,7 @@ module RemoteAssociation
     # this object holds an id:
     #
     # [associations()]
-    #   Returns the associated objects. +nil+ is returned if none is found.
+    #   Returns the associated objects. +[]+ is returned if none is found.
     # [associations=(associates)]
     #   Just setter, no saves.
     #
@@ -56,7 +56,7 @@ module RemoteAssociation
         # === Example
         #
         #  def customers
-        #    if remote_resources_prefetched?
+        #    if remote_resources_loaded?
         #      @customers ? @customers : nil
         #    else
         #      @customers ||= Person.
@@ -65,8 +65,8 @@ module RemoteAssociation
         #  end
         #
         def #{remote_rel}
-          if remote_resources_prefetched?
-            @#{remote_rel} ? @#{remote_rel} : nil
+          if remote_resources_loaded?
+            @#{remote_rel} ? @#{remote_rel} : []
           else
             @#{remote_rel} ||= #{rel_options[:class_name]}.
               find(:all, params: self.class.build_params_hash_for_#{remote_rel}(self.id))

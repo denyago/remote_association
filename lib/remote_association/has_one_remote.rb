@@ -51,7 +51,7 @@ module RemoteAssociation
           attr_accessor :#{remote_rel}
 
           def #{remote_rel}
-            if remote_resources_prefetched?
+            if remote_resources_loaded?
               @#{remote_rel} ? @#{remote_rel}.first : nil
             else
               @#{remote_rel} ||= #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.id))

@@ -33,10 +33,15 @@ describe RemoteAssociation, 'method :has_many_remote' do
     User.first.profiles.map(&:like).should eq ["letter A", "letter B"]
   end
 
+  it 'returns empty Array if no objects present' do
+    FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1", body: [].to_json )
+    User.first.profiles.should eq []
+  end
+
   it 'should prefetch remote associations of models with defaults (single request)' do
     FakeWeb.register_uri(:get, "#{REMOTE_HOST}/profiles.json?user_id%5B%5D=1&user_id%5B%5D=2", body: @full_body)
 
-    users = User.scoped.includes_remote(:profiles)
+    users = User.scoped.includes_remote(:profiles).all
     users.first.profiles.map(&:like).should eq ["letter A", "letter B"]
     users.last.profiles.map(&:like).should eq ["letter C"]
   end

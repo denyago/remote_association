@@ -40,16 +40,18 @@ module RemoteAssociation
       #
       # Author.add_activeresource_relation(:profile, {class_name: "Profile", foreign_key: "author_id"})
       def add_activeresource_relation(name, options)
-        existing_relations = activeresource_relations
-        existing_relations[name] = options
-        @activeresource_relations = existing_relations
+        activeresource_relations[name] = options
       end
 
       # Returns settings for relations to ActiveResource models.
       #
       # === Examples
       #
-      # Author.activeresource_relations #=> [{profile: {class_name: "Profile", foreign_key: "author_id"}}]
+      # Author.activeresource_relations #=>
+      #   {
+      #     profile: {class_name: "Profile", foreign_key: "author_id"},
+      #     badges: {class_name: "Badge", foreign_key: "author_id"}
+      #   }
       def activeresource_relations
         @activeresource_relations ||= {}
       end

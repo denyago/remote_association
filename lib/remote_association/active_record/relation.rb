@@ -129,13 +129,12 @@ module ActiveRecord
     end
 
     def fetch_remote_objects(ar_class, keys, ar_accessor)
-      params = klass.build_params_hash(keys).deep_merge(remote_conditions[ar_accessor.to_sym])
+      params = klass.send(:"build_params_hash_for_#{ar_accessor}", keys).deep_merge(remote_conditions[ar_accessor.to_sym])
       ar_class.find(:all, :params => params )
     end
 
     def remote_resources_loaded?
       !!@remote_resources_loaded
     end
-
   end
 end

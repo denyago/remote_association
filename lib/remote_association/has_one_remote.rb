@@ -55,13 +55,13 @@ module RemoteAssociation
               @#{remote_rel} ? @#{remote_rel}.first : nil
             else
               join_key = self.class.primary_key
-              @#{remote_rel} ||= #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash(self.send(join_key)))
+              @#{remote_rel} ||= #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.send(join_key)))
             end
           end
 
           ##
           # Returns Hash with HTTP parameters to query remote API
-          def self.build_params_hash(keys)
+          def self.build_params_hash_for_#{remote_rel}(keys)
             keys = [keys] unless keys.kind_of?(Array)
             {"#{rel_options[:foreign_key]}" => keys}
           end

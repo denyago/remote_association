@@ -48,7 +48,7 @@ module RemoteAssociation
                        class_name:  remote_rel.to_s.classify,
                        foreign_key: remote_rel.to_s.foreign_key,
                        association_type: :belongs_to_remote,
-                       primary_key: 'id'
+                       primary_key: primary_key
                       }.merge(options.symbolize_keys)
 
         add_activeresource_relation(remote_rel.to_sym, rel_options)

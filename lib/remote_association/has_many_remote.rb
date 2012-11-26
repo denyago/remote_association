@@ -54,8 +54,10 @@ module RemoteAssociation
           if remote_resources_loaded?                                     #    if remote_resources_loaded?
             @#{remote_rel} ? @#{remote_rel} : []                          #      @customers ? @customers : []
           else                                                            #    else
+            join_key = self.class.primary_key                             #      join_key = self.class.primary_key
             @#{remote_rel} ||= #{rel_options[:class_name]}.               #      @customers ||= Person.
-              find(:all, params: self.class.build_params_hash(self.id))   #        find(:all, params: self.class.build_params_hash(self.id))
+              find(:all, params: self.class.                              #        find(:all, params: self.class.
+                build_params_hash(self.send(join_key)))                   #          build_params_hash(self.send(join_key)))
           end                                                             #    end
         end                                                               #  end
 

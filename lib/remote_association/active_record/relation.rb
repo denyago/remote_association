@@ -103,9 +103,10 @@ module ActiveRecord
       keys = @records.uniq.map(&:id)
 
       remote_objects = fetch_remote_objects(settings.ar_class, keys, settings.ar_accessor)
+      join_key = klass.primary_key
 
       @records.each do |record|
-        record.send("#{settings.ar_accessor}=", remote_objects.select { |s| s.send(settings.foreign_key) == record.id })
+        record.send("#{settings.ar_accessor}=", remote_objects.select { |s| s.send(settings.foreign_key) == record.send(join_key) })
       end
     end
 
@@ -115,9 +116,10 @@ module ActiveRecord
       return if keys.empty?
 
       remote_objects = fetch_remote_objects(settings.ar_class, keys, settings.ar_accessor)
+      join_key = settings.ar_class.primary_key
 
       @records.each do |record|
-        record.send("#{settings.ar_accessor}=", remote_objects.select { |s| record.send(settings.foreign_key) == s.id })
+        record.send("#{settings.ar_accessor}=", remote_objects.select { |s| record.send(settings.foreign_key) == s.send(join_key) })
       end
     end
 

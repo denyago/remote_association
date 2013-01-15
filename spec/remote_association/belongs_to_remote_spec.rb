@@ -114,6 +114,40 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     end
   end
 
+  context 'with polymorphic option' do
+    before(:each) do
+      unset_const(:PolymorphicProfile)
+      unset_const(:OwnerA)
+      class OwnerA < ActiveResource::Base
+        self.site = REMOTE_HOST
+        self.element_name = "owner_a"
+      end
+      class PolymorphicProfile < ActiveRecord::Base
+        include RemoteAssociation::Base
+        belongs_to_remote :owner, polymorphic: true
+      end
+      add_polymorphic_profile(1, 1, 'owner_a', "")
+
+      body_a = [{owner_a: {id: 1, name: "The Owner A"}}].to_json
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/owner_as.json?id%5B%5D=1", body: body_a)
+    end
+
+    it 'has polymorphic option' do
+      PolymorphicProfile.first.owner.name.should eq('The Owner A')
+    end
+
+    pending 'should prefetch remote associations of models with defaults (single request)' do
+      add_polymorphic_profile(2, 2, 'owner_a', "")
+
+      full_body = [{owner_a: {id: 1, name: "The Owner A"}}, {owner_a: {id: 2, name: "The Owner A (other)"}}].to_json
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/owner_as.json?id%5B%5D=1&id%5B%5D=2", body: full_body)
+
+      profiles = PolymorphicProfile.scoped.includes_remote(:owner).all
+      profiles.first.owner.name.should eq('The Owner A')
+      profiles.last.owner.name.should eq('The Owner A (other)')
+    end
+  end
+
   context "safe when using several remotes" do
     before do
       unset_const(:User)

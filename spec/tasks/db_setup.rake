@@ -36,6 +36,17 @@ CREATE TABLE "public"."profiles" (
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."profiles" OWNER TO "rails";
 
+DROP TABLE IF EXISTS "public"."polymorphic_profiles";
+
+CREATE TABLE "public"."polymorphic_profiles" (
+	"id" int4 NOT NULL,
+	"owner_id" int4,
+	"owner_type" varchar(255) NOT NULL,
+	"like" varchar(255) NOT NULL,
+	CONSTRAINT "polymorphic_profiles_pkey" PRIMARY KEY ("id") NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."polymorphic_profiles" OWNER TO "rails";
 SQL
                                      )
     end

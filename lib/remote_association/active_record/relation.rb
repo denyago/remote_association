@@ -21,6 +21,11 @@ module ActiveRecord
         settings = klass.activeresource_relations[r.to_sym]
         raise RemoteAssociation::SettingsNotFoundError, "Can't find settings for #{r} association" if settings.blank?
 
+        if settings[:polymorphic]
+          puts "Preload of polymorphic associations not supported"
+          next
+        end
+
         ar_class = settings[:class_name].constantize
 
         remote_associations << OpenStruct.new(

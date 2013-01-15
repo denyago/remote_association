@@ -42,6 +42,10 @@ def add_profile(id, user_id, like)
   ActiveRecord::Base.connection.execute("insert into \"public\".\"profiles\" (\"id\", \"user_id\", \"like\") values ( #{id}, #{user_id}, '#{like}');")
 end
 
+def add_polymorphic_profile(id, owner_id, owner_type, like)
+  ActiveRecord::Base.connection.execute("insert into \"public\".\"polymorphic_profiles\" (\"id\", \"owner_id\", \"owner_type\", \"like\") values ( #{id}, #{owner_id}, '#{owner_type}', '#{like}');")
+end
+
 REMOTE_HOST = "http://127.0.0.1:3000"
 
 def unset_const(const_name)

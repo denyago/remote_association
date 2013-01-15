@@ -37,6 +37,13 @@ module RemoteAssociation
       # of "favorite_person_id".
       # [:primary_key]
       # Specify the http query parameter to find associated object used for the association. By default this is <tt>id</tt>.
+      # [:polymorphic]
+      # Specify this association is a polymorphic association by passing true.
+      # [:foreign_type]
+      # Specify the column used to store the associated object’s type, if this is a polymorphic association.
+      # By default this is guessed to be the name of the association with a “_type” suffix.
+      # So a class that defines a belongs_to_remote :owner, :polymorphic => true association
+      # will use “owner_type” as the default :foreign_type.
       # Example:
       #  belongs_to_remote :firm, :primary_key => 'search[id_in]' #=> ...?firms.json?search%5Bid_in%5D%5B%5D=1
       #
@@ -45,34 +52,66 @@ module RemoteAssociation
       #   belongs_to_remote :author, :class_name => "Person", :foreign_key => "author_id"
       def belongs_to_remote(remote_rel, options ={})
         rel_options = {
-                       class_name:  remote_rel.to_s.classify,
-                       foreign_key: remote_rel.to_s.foreign_key,
+                       class_name:    remote_rel.to_s.classify,
+                       foreign_key:   remote_rel.to_s.foreign_key,
+                       foreign_type:  remote_rel.to_s + '_type',
                        association_type: :belongs_to_remote,
                        primary_key: primary_key
                       }.merge(options.symbolize_keys)
 
         add_activeresource_relation(remote_rel.to_sym, rel_options)
 
-        class_eval <<-RUBY, __FILE__, __LINE__+1
+        if rel_options[:polymorphic]
+          class_eval <<-RUBY, __FILE__, __LINE__+1
 
-          attr_accessor :#{remote_rel}
+            attr_accessor :#{remote_rel}
 
-          def #{remote_rel}
-            if remote_resources_loaded?
-              @#{remote_rel} ? @#{remote_rel}.first : nil
-            else
-              @#{remote_rel} ||= self.#{rel_options[:foreign_key]}.present? ? #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]})) : nil
+            def #{remote_rel}
+              if remote_resources_loaded?
+                @#{remote_rel} ? @#{remote_rel}.first : nil
+              else
+                @#{remote_rel} ||= if self.#{rel_options[:foreign_key]}.present? && self.#{rel_options[:foreign_class]}.present?
+                                     #{rel_options[:foreign_type]}.classify.constantize.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]}))
+                                   else
+                                     nil
+                                   end
+              end
             end
-          end
 
-          ##
-          # Returns Hash with HTTP parameters to query remote API
-          def self.build_params_hash_for_#{remote_rel}(keys)
-            keys = [keys] unless keys.kind_of?(Array)
-            {"#{rel_options[:primary_key]}" => keys}
-          end
+            ##
+            # Returns Hash with HTTP parameters to query remote API
+            def self.build_params_hash_for_#{remote_rel}(keys)
+              keys = [keys] unless keys.kind_of?(Array)
+              {"#{rel_options[:primary_key]}" => keys}
+            end
 
-        RUBY
+          RUBY
+        else
+          class_eval <<-RUBY, __FILE__, __LINE__+1
+
+            attr_accessor :#{remote_rel}
+
+            def #{remote_rel}
+              if remote_resources_loaded?
+                @#{remote_rel} ? @#{remote_rel}.first : nil
+              else
+                @#{remote_rel} ||= if self.#{rel_options[:foreign_key]}.present?
+                                     #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]}))
+                                   else
+                                     nil
+                                   end
+              end
+            end
+
+            ##
+            # Returns Hash with HTTP parameters to query remote API
+            def self.build_params_hash_for_#{remote_rel}(keys)
+              keys = [keys] unless keys.kind_of?(Array)
+              {"#{rel_options[:primary_key]}" => keys}
+            end
+
+          RUBY
+        end
       end
   end
 end

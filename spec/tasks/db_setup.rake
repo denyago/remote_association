@@ -1,4 +1,5 @@
 require 'active_record'
+require 'yaml'
 
 namespace :spec do
   namespace :db do
@@ -75,6 +76,3 @@ SQL
     end
   end
 end
-
-
-

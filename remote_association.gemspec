@@ -25,5 +25,4 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'pg',                '~> 0.14'
   gem.add_development_dependency 'database_cleaner',  '~> 0.8'
   gem.add_development_dependency 'fakeweb'
-
 end

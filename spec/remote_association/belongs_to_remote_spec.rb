@@ -148,6 +148,32 @@ describe RemoteAssociation, "method :belongs_to_remote" do
     end
   end
 
+  context "resource unavailable" do
+    subject { Profile.first.user }
+    before do
+      unset_const(:Profile)
+      class Profile < ActiveRecord::Base
+        include RemoteAssociation::Base
+        belongs_to_remote :user
+      end
+      FakeWeb.register_uri(:get, "#{REMOTE_HOST}/users.json?id%5B%5D=1", status: '404', body: '<html>
+<head><title>404 Not Found</title></head>
+<body bgcolor="white">
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/1.6.2</center>
+</body>
+</html>')
+    end
+
+    it "not raises error" do
+      expect { subject }.to_not raise_error
+    end
+
+    it "is nil" do
+      should be_nil
+    end
+  end
+
   context "safe when using several remotes" do
     before do
       unset_const(:User)

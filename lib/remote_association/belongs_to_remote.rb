@@ -71,7 +71,7 @@ module RemoteAssociation
                 @#{remote_rel} ? @#{remote_rel}.first : nil
               else
                 @#{remote_rel} ||= if self.#{rel_options[:foreign_key]}.present? && self.#{rel_options[:foreign_class]}.present?
-                                     #{rel_options[:foreign_type]}.classify.constantize.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]}))
+                                     #{rel_options[:foreign_type]}.classify.constantize.find(:all, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]})).try(:first)
                                    else
                                      nil
                                    end
@@ -96,7 +96,7 @@ module RemoteAssociation
                 @#{remote_rel} ? @#{remote_rel}.first : nil
               else
                 @#{remote_rel} ||= if self.#{rel_options[:foreign_key]}.present?
-                                     #{rel_options[:class_name]}.find(:first, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]}))
+                                     #{rel_options[:class_name]}.find(:all, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]})).try(:first)
                                    else
                                      nil
                                    end

@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = RemoteAssociation::VERSION
 
-  rails_version = "~> 3.2"
+  rails_version = ">= 3.2"
 
   gem.add_dependency  'activesupport',  rails_version
   gem.add_dependency  'activerecord',   rails_version

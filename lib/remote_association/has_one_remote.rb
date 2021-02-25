@@ -62,8 +62,8 @@ module RemoteAssociation
             if remote_resources_loaded?
               @#{remote_rel} ? @#{remote_rel}.first : nil
             else
-              join_key = #{rel_options[:primary_key]}
-              @#{remote_rel} ||= #{rel_options[:class_name]}.find(#{rel_options[:scope]}, params: self.class.build_params_hash_for_#{remote_rel}(self.send(join_key)))
+              join_key = "#{rel_options[:primary_key]}"
+              @#{remote_rel} ||= #{rel_options[:class_name]}.find("#{rel_options[:scope]}".to_sym, params: self.class.build_params_hash_for_#{remote_rel}(self.send(join_key)))
             end
           end
 

@@ -28,19 +28,28 @@ module RemoteAssociation
     #   Specify the class name of the association. Use it only if that name can't be inferred
     #   from the association name. So <tt>has_many_remote :profiles</tt> will by default be linked to the Profile class, but
     #   if the real class name is SocialProfile, you'll have to specify it with this option.
+    # [:primary_key]
+    #   Specify the http query parameter to find associated object used for the association. By default this is <tt>id</tt>.
     # [:foreign_key]
     #   Specify the foreign key used for searching association on remote service. By default this is guessed to be the name
     #   of the current class with an "_id" suffix. So a class Author that defines a <tt>has_many_remote :profiles</tt>
     #   association will use "author_id" as the default <tt>:foreign_key</tt>.
     #   This key will be used in :get request. Example: <tt>GET http://example.com/profiles?author_id[]=1</tt>
+    # [:scope]
+    #   Specify the scope of the association. By default this is <tt>:all</tt>. So a class that defines 
+    #   <tt>has_one_remote :profile, scope: "me"</tt>  scope will use "me" as the default <tt>:scope</tt> 
+    #   This key will be used in :get request. Example: <tt> GET http://example.com/profiles/me</tt>
     #
     # Option examples:
     #   has_many_remote :firms, :foreign_key => "client_of"
     #   has_many_remote :badges, :class_name => "Label", :foreign_key => "author_id"
+    #   has_many_remote :posts, :class_name => "Post", :foreign_key => "author_email", :primary_key => "email"
     def has_many_remote(remote_rel, options ={})
       rel_options = {
           class_name: remote_rel.to_s.singularize.classify,
+          primary_key: self.class.primary_key
           foreign_key: self.model_name.to_s.foreign_key,
+          scope: :all,
           association_type: :has_many_remote
       }.merge(options.symbolize_keys)
 
@@ -69,9 +78,9 @@ module RemoteAssociation
           if remote_resources_loaded?
             @#{remote_rel} ? @#{remote_rel} : []
           else
-            join_key = self.class.primary_key
+            join_key = #{rel_options[:primary_key]}
             @#{remote_rel} ||= #{rel_options[:class_name]}.
-              find(:all, params: self.class.build_params_hash_for_#{remote_rel}(self.send(join_key)))
+              find(#{rel_options[:scope]}, params: self.class.build_params_hash_for_#{remote_rel}(self.send(join_key)))
           end
         end
 
@@ -81,12 +90,11 @@ module RemoteAssociation
         # == Example
         #
         #  def self.build_params_hash_for_customer(keys)
-        #    keys = [keys] unless keys.kind_of?(Array)
         #    {"user_id" => keys}
         #  end
         #
         def self.build_params_hash_for_#{remote_rel}(keys)
-          keys = [keys] unless keys.kind_of?(Array)
+          # keys = [keys] unless keys.kind_of?(Array)
           {"#{rel_options[:foreign_key]}" => keys}
         end
 

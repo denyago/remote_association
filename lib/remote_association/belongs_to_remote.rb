@@ -26,26 +26,26 @@ module RemoteAssociation
       # === Options
       #
       # [:class_name]
-      # Specify the class name of the association. Use it only if that name can't be inferred
-      # from the association name. So <tt>belongs_to_remote :author</tt> will by default be linked to the Author class, but
-      # if the real class name is Person, you'll have to specify it with this option.
+      #   Specify the class name of the association. Use it only if that name can't be inferred
+      #   from the association name. So <tt>belongs_to_remote :author</tt> will by default be linked to the Author class, but
+      #   if the real class name is Person, you'll have to specify it with this option.
       # [:foreign_key]
-      # Specify the foreign key used for the association. By default this is guessed to be the name
-      # of the association with an "_id" suffix. So a class that defines a <tt>belongs_to_remote :person</tt>
-      # association will use "person_id" as the default <tt>:foreign_key</tt>. Similarly,
-      # <tt>belongs_to_remote :favorite_person, :class_name => "Person"</tt> will use a foreign key
-      # of "favorite_person_id".
+      #   Specify the foreign key used for the association. By default this is guessed to be the name
+      #   of the association with an "_id" suffix. So a class that defines a <tt>belongs_to_remote :person</tt>
+      #   association will use "person_id" as the default <tt>:foreign_key</tt>. Similarly,
+      #   <tt>belongs_to_remote :favorite_person, :class_name => "Person"</tt> will use a foreign key
+      #   of "favorite_person_id".
       # [:primary_key]
-      # Specify the http query parameter to find associated object used for the association. By default this is <tt>id</tt>.
+      #   Specify the http query parameter to find associated object used for the association. By default this is <tt>id</tt>.
       # [:polymorphic]
-      # Specify this association is a polymorphic association by passing true.
+      #   Specify this association is a polymorphic association by passing true.
       # [:foreign_type]
-      # Specify the column used to store the associated object’s type, if this is a polymorphic association.
-      # By default this is guessed to be the name of the association with a “_type” suffix.
-      # So a class that defines a belongs_to_remote :owner, :polymorphic => true association
-      # will use “owner_type” as the default :foreign_type.
-      # Example:
-      #  belongs_to_remote :firm, :primary_key => 'search[id_in]' #=> ...?firms.json?search%5Bid_in%5D%5B%5D=1
+      #   Specify the column used to store the associated object’s type, if this is a polymorphic association.
+      #   By default this is guessed to be the name of the association with a “_type” suffix.
+      #   So a class that defines a belongs_to_remote :owner, :polymorphic => true association
+      #   will use “owner_type” as the default :foreign_type.
+      #   Example:
+      #     belongs_to_remote :firm, :primary_key => 'search[id_in]' #=> ...?firms.json?search%5Bid_in%5D%5B%5D=1
       #
       # Option examples:
       #   belongs_to_remote :firm, :foreign_key => "client_of"

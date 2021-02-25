@@ -46,7 +46,7 @@ module RemoteAssociation
       def has_one_remote(remote_rel, options ={})
         rel_options = {
                        class_name: remote_rel.to_s.classify,
-                       primary_key: self.class.primary_key,
+                       primary_key: primary_key,
                        foreign_key: self.model_name.to_s.foreign_key,
                        scope: :first,
                        association_type: :has_one_remote

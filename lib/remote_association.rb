@@ -5,7 +5,7 @@ require "remote_association/version"
 require "remote_association/has_one_remote"
 require "remote_association/has_many_remote"
 require "remote_association/belongs_to_remote"
-require "remote_association/active_record/relation"
+# require "remote_association/active_record/relation"
 
 module RemoteAssociation
 
@@ -68,3 +68,7 @@ module RemoteAssociation
 
   class SettingsNotFoundError < StandardError; end
 end
+
+# ActiveSupport.on_load(:active_record) do
+#   ActiveRecord::Relation.extend RemoteAssociation::ActiveRecord::Relation
+# end

@@ -6,16 +6,16 @@ Gem::Specification.new do |gem|
   gem.email         = ["denyago@gmail.com", "roberto.scinocca@hey.com"]
   gem.description   = %q{Your model has_one_remote ActiveResource instance}
   gem.summary       = %q{Adds relations to ActiveResource models}
-  gem.homepage      = "https://github.com/retsef/remote_association"
+  gem.homepage      = "https://github.com/denyago/remote_association"
 
-  gem.files         = `git ls-files`.split($\)
+  gem.files         = Dir["lib/**/*", "LICENSE"].reject { |f| File.directory?(f) }
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(spec)/})
   gem.name          = "remote_association"
   gem.require_paths = ["lib"]
   gem.version       = RemoteAssociation::VERSION
 
-  rails_version = ">= 3.2"
+  rails_version = ">= 4.2"
 
   gem.add_dependency  'activesupport',  rails_version
   gem.add_dependency  'activerecord',   rails_version

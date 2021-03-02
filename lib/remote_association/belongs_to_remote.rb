@@ -71,17 +71,19 @@ module RemoteAssociation
                 @#{remote_rel} ? @#{remote_rel}.first : nil
               else
                 @#{remote_rel} ||= if self.#{rel_options[:foreign_key]}.present? && self.#{rel_options[:foreign_class]}.present?
-                                     #{rel_options[:foreign_type]}.classify.constantize.find(:all, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]})).try(:first)
+                                     #{rel_options[:foreign_type]}.classify.constantize.find(#{rel_options[:foreign_class]}, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]}))
                                    else
                                      nil
                                    end
               end
+            rescue ActiveResource::ResourceNotFound => _e
+              @#{remote_rel} ||= nil
             end
 
             ##
             # Returns Hash with HTTP parameters to query remote API
             def self.build_params_hash_for_#{remote_rel}(keys)
-              keys = [keys] unless keys.kind_of?(Array)
+              # keys = [keys] unless keys.kind_of?(Array)
               {"#{rel_options[:primary_key]}" => keys}
             end
 
@@ -106,7 +108,7 @@ module RemoteAssociation
             ##
             # Returns Hash with HTTP parameters to query remote API
             def self.build_params_hash_for_#{remote_rel}(keys)
-              keys = [keys] unless keys.kind_of?(Array)
+              # keys = [keys] unless keys.kind_of?(Array)
               {"#{rel_options[:primary_key]}" => keys}
             end
 

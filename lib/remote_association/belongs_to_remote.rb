@@ -98,7 +98,7 @@ module RemoteAssociation
                 @#{remote_rel} ? @#{remote_rel}.first : nil
               else
                 @#{remote_rel} ||= if self.#{rel_options[:foreign_key]}.present?
-                                     #{rel_options[:class_name]}.find(:all, params: self.class.build_params_hash_for_#{remote_rel}(self.#{rel_options[:foreign_key]})).try(:first)
+                                     #{rel_options[:class_name]}.find(#{rel_options[:foreign_key]})
                                    else
                                      nil
                                    end

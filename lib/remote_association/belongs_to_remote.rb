@@ -95,7 +95,7 @@ module RemoteAssociation
 
             def #{remote_rel}
               if remote_resources_loaded?
-                @#{remote_rel} ? @#{remote_rel}.first : nil
+                @#{remote_rel} || nil
               else
                 @#{remote_rel} ||= if self.#{rel_options[:foreign_key]}.present?
                                      #{rel_options[:class_name]}.find(#{rel_options[:foreign_key]})
@@ -103,6 +103,8 @@ module RemoteAssociation
                                      nil
                                    end
               end
+            rescue ActiveResource::ResourceNotFound => _e
+              @#{remote_rel} ||= nil
             end
 
             ##

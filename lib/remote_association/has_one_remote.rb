@@ -65,6 +65,8 @@ module RemoteAssociation
               join_key = "#{rel_options[:primary_key]}"
               @#{remote_rel} ||= #{rel_options[:class_name]}.find("#{rel_options[:scope]}".to_sym, params: self.class.build_params_hash_for_#{remote_rel}(self.send(join_key)))
             end
+          rescue ActiveResource::ResourceNotFound => _e
+            @#{remote_rel} ||= nil
           end
 
           ##
